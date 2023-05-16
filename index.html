@@ -342,18 +342,24 @@
       var mutationCount = 0;
 
       function translateTextNode(node, info) {
-        if(langify.settings.observeCustomContents === false || !node.textContent || node.textContent.trim().length === 0) {
+        if (langify.settings.observeCustomContents === false || Object.keys(customContents_text).length === 0) {
           return;
         }
-        var src = node.textContent.trim().replace(/(\r\n|\n|\r)/gim,"").replace(/\s+/g," ").toLowerCase();
-        if(customContents_text[src] && node.textContent !== customContents_text[src]) {
-          var newContent = node.textContent.replace(node.textContent.trim(), customContents_text[src]);
-          if (newContent != node.textContent) {
+              
+        var textContent = node.textContent || '';
+        var trimmedTextContent = textContent.trim();
+        if (trimmedTextContent.length === 0) {
+          return;
+        }
+
+        var src = trimmedTextContent.replace(/[\r\n]+/gim,"").replace(/\s+/g," ").toLowerCase();
+        if (customContents_text[src] && textContent !== customContents_text[src]) {
+          var newContent = textContent.replace(trimmedTextContent, customContents_text[src]);
+          if (newContent != textContent) {
             if(!node.parentNode.hasAttribute('data-ly-mutation-count') || parseInt(node.parentNode.getAttribute('data-ly-mutation-count')) < langify.settings.maxMutations) {
               var count = node.parentNode.hasAttribute('data-ly-mutation-count') ? parseInt(node.parentNode.getAttribute('data-ly-mutation-count')) : 0;
               node.parentNode.setAttribute('data-ly-mutation-count', count+1);
               node.textContent = newContent;
-
               mutationCount = mutationCount + 1;
               log('REPLACED (TEXT)', {
                   oldValue: src,
