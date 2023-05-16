@@ -299,32 +299,37 @@
 
 
       function translate(node, info) {
-        if((node.nodeType === 1 && node.hasAttribute('data-ly-locked')) || (node.nodeType === 3 && node.parentNode && node.parentNode.hasAttribute('data-ly-locked'))) {
+        const nodeType = node.nodeType;
+        const nodeName = node.nodeName;
+
+        if ((nodeType === 1 && node.hasAttribute('data-ly-locked')) || (nodeType === 3 && node.parentNode && node.parentNode.hasAttribute('data-ly-locked'))) {
           return;
         }
+
+        if (nodeType === 1 && node.style.backgroundImage) {
+          translateCssImage(node);
+        }
+
         // CC-Hook
-        if (node.nodeName  !== 'SCRIPT' && node.nodeName  !== 'STYLE') {
-          if (node.nodeType === 3) {
+        if (nodeName  !== 'SCRIPT' && nodeName  !== 'STYLE') {
+          if (nodeType === 3) {
             translateTextNode(node, info);
           }
           translateNodeAttrs(node);
         }
         // Links-Hook
-        if (node.nodeName  === 'A' || node.nodeName  === 'FORM') {
+        if (nodeName  === 'A' || nodeName  === 'FORM') {
           if(node.hasAttribute('href')) var attrName = 'href';
           else var attrName = 'action';
           var url = node.getAttribute(attrName);
           translateLink(url, node);
         }
         // Images-Hook
-        if (node.nodeName  === 'IMG' || node.nodeName  === 'SOURCE') {
+        else if (nodeName  === 'IMG' || nodeName  === 'SOURCE') {
           translateImage(node, ['src', 'data-src', 'srcset', 'data-srcset']);
         }
-        if (node.attributes && node.getAttribute('style')) {
-          translateCssImage(node);
-        }
         // Iframe Observation
-        if (node.nodeName  === 'IFRAME') {
+        else if (nodeName  === 'IFRAME') {
           // Todo: handle srcdoc iframe content observing
           if (node.getAttribute('ly-is-observing') == null && node.getAttribute('src') == null && !node.hasAttribute('srcdoc')) {
             node.setAttribute('ly-is-observing', 'true');
